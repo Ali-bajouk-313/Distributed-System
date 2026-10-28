@@ -1,0 +1,11 @@
+.git
+.venv
+data
+__pycache__
+docs
+ui/node_modules
+ui/dist
+output
+tmp
+**/__pycache__
+**/*.pyc

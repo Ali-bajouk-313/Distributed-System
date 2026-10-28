@@ -1,0 +1,547 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Atlas evidence - 2. Storage nodes</title><style>
+    body{font-family:Segoe UI,Arial,sans-serif;margin:0;background:#f4f6fb;color:#334665}header{padding:25px 35px;background:white;border-bottom:1px solid #dde5f2}header b{font-size:24px;color:#4362af}nav{display:flex;gap:15px;flex-wrap:wrap;margin-top:17px}nav a{color:#6c83b4;font-size:12px}main{max-width:1100px;margin:30px auto;padding:0 25px}h1{font-size:30px}p{color:#7e8ca6;line-height:1.6}pre{padding:20px;background:white;border:1px solid #e0e7f3;border-radius:8px;white-space:pre-wrap;word-break:break-word;font-size:11px;line-height:1.6}.stamp{font-size:11px;color:#9ca8bd}</style></head>
+    <body><header><b>ATLAS</b> / Recorded verification evidence<nav><a href="environment.html">1. Environment</a><a href="storage.html">2. Storage nodes</a><a href="metadata.html">3. Metadata and placement</a><a href="redundancy.html">4. Redundancy and recovery</a><a href="api.html">5. API access</a><a href="ui.html">6. React console</a></nav></header><main><div class="stamp">Captured 2026-10-28 10:40:43 Middle East Standard Time | Actual command and API output</div><h1>2. Storage nodes</h1><p>Live storage health, free space, physical chunk counts and heartbeat timestamps.</p><pre>{
+  &quot;status&quot;: 200,
+  &quot;body&quot;: {
+    &quot;nodes&quot;: [
+      {
+        &quot;node_id&quot;: &quot;node1&quot;,
+        &quot;url&quot;: &quot;http://node1:8000&quot;,
+        &quot;free_bytes&quot;: 993833906176,
+        &quot;chunk_count&quot;: 88,
+        &quot;stored_bytes&quot;: 66718474,
+        &quot;last_seen&quot;: 1793176820.6767147,
+        &quot;failed&quot;: false,
+        &quot;direct_url&quot;: &quot;http://172.22.0.9:8000&quot;,
+        &quot;health&quot;: &quot;healthy&quot;,
+        &quot;assigned_fragments&quot;: 88
+      },
+      {
+        &quot;node_id&quot;: &quot;node2&quot;,
+        &quot;url&quot;: &quot;http://node2:8000&quot;,
+        &quot;free_bytes&quot;: 993833848832,
+        &quot;chunk_count&quot;: 107,
+        &quot;stored_bytes&quot;: 91171698,
+        &quot;last_seen&quot;: 1793176822.005033,
+        &quot;failed&quot;: false,
+        &quot;direct_url&quot;: &quot;http://172.22.0.12:8000&quot;,
+        &quot;health&quot;: &quot;healthy&quot;,
+        &quot;assigned_fragments&quot;: 102
+      },
+      {
+        &quot;node_id&quot;: &quot;node3&quot;,
+        &quot;url&quot;: &quot;http://node3:8000&quot;,
+        &quot;free_bytes&quot;: 993833910272,
+        &quot;chunk_count&quot;: 74,
+        &quot;stored_bytes&quot;: 61537146,
+        &quot;last_seen&quot;: 1793176820.6221848,
+        &quot;failed&quot;: false,
+        &quot;direct_url&quot;: &quot;http://172.22.0.19:8000&quot;,
+        &quot;health&quot;: &quot;healthy&quot;,
+        &quot;assigned_fragments&quot;: 72
+      },
+      {
+        &quot;node_id&quot;: &quot;node4&quot;,
+        &quot;url&quot;: &quot;http://node4:8000&quot;,
+        &quot;free_bytes&quot;: 993833906176,
+        &quot;chunk_count&quot;: 110,
+        &quot;stored_bytes&quot;: 92611142,
+        &quot;last_seen&quot;: 1793176820.67859,
+        &quot;failed&quot;: false,
+        &quot;direct_url&quot;: &quot;http://172.22.0.11:8000&quot;,
+        &quot;health&quot;: &quot;healthy&quot;,
+        &quot;assigned_fragments&quot;: 106
+      },
+      {
+        &quot;node_id&quot;: &quot;node5&quot;,
+        &quot;url&quot;: &quot;http://node5:8000&quot;,
+        &quot;free_bytes&quot;: 993833848832,
+        &quot;chunk_count&quot;: 88,
+        &quot;stored_bytes&quot;: 78377779,
+        &quot;last_seen&quot;: 1793176822.0054488,
+        &quot;failed&quot;: false,
+        &quot;direct_url&quot;: &quot;http://172.22.0.13:8000&quot;,
+        &quot;health&quot;: &quot;healthy&quot;,
+        &quot;assigned_fragments&quot;: 86
+      },
+      {
+        &quot;node_id&quot;: &quot;node6&quot;,
+        &quot;url&quot;: &quot;http://node6:8000&quot;,
+        &quot;free_bytes&quot;: 993833807872,
+        &quot;chunk_count&quot;: 98,
+        &quot;stored_bytes&quot;: 75520097,
+        &quot;last_seen&quot;: 1793176822.47247,
+        &quot;failed&quot;: false,
+        &quot;direct_url&quot;: &quot;http://172.22.0.18:8000&quot;,
+        &quot;health&quot;: &quot;healthy&quot;,
+        &quot;assigned_fragments&quot;: 95
+      },
+      {
+        &quot;node_id&quot;: &quot;node7&quot;,
+        &quot;url&quot;: &quot;http://node7:8000&quot;,
+        &quot;free_bytes&quot;: 993833861120,
+        &quot;chunk_count&quot;: 97,
+        &quot;stored_bytes&quot;: 95066984,
+        &quot;last_seen&quot;: 1793176821.8945363,
+        &quot;failed&quot;: false,
+        &quot;direct_url&quot;: &quot;http://172.22.0.17:8000&quot;,
+        &quot;health&quot;: &quot;healthy&quot;,
+        &quot;assigned_fragments&quot;: 95
+      },
+      {
+        &quot;node_id&quot;: &quot;node8&quot;,
+        &quot;url&quot;: &quot;http://node8:8000&quot;,
+        &quot;free_bytes&quot;: 993833910272,
+        &quot;chunk_count&quot;: 106,
+        &quot;stored_bytes&quot;: 108875020,
+        &quot;last_seen&quot;: 1793176820.5743134,
+        &quot;failed&quot;: false,
+        &quot;direct_url&quot;: &quot;http://172.22.0.10:8000&quot;,
+        &quot;health&quot;: &quot;healthy&quot;,
+        &quot;assigned_fragments&quot;: 103
+      }
+    ],
+    &quot;node_count&quot;: 8,
+    &quot;healthy_nodes&quot;: 8,
+    &quot;objects&quot;: 215,
+    &quot;buckets&quot;: 13,
+    &quot;logical_bytes&quot;: 223951768,
+    &quot;physical_bytes&quot;: 657210549,
+    &quot;unique_chunks&quot;: 246,
+    &quot;chunk_references&quot;: 267,
+    &quot;degraded_objects&quot;: 0,
+    &quot;unavailable_objects&quot;: 0,
+    &quot;free_bytes&quot;: 7950670999552,
+    &quot;jobs&quot;: [
+      {
+        &quot;id&quot;: &quot;index-b17cb29a1a6c9c70953487acab242e44d2ff00c3361b334ec43aa5cfb0b97418&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;pytest-ec-3cd75a3d8b&quot;,
+          &quot;key&quot;: &quot;encoded.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176606.2323067,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176792.3993993
+      },
+      {
+        &quot;id&quot;: &quot;index-45c7e545c4fa18e7ddaf1e270456ccbe4dbadd14177611aefe772e7c0b1c5170&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;pytest-2180d11a9307&quot;,
+          &quot;key&quot;: &quot;concurrent&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176604.488745,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176789.3186107
+      },
+      {
+        &quot;id&quot;: &quot;index-944f06cc8041d119867ad5531f1101a5d1e7dd9fd85207be3b6cec3acbf9e541&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;pytest-2180d11a9307&quot;,
+          &quot;key&quot;: &quot;search/example.json&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176592.1127286,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176773.5409713
+      },
+      {
+        &quot;id&quot;: &quot;index-7eb2402ab727acf7be27fedca8242d63bff793c16961ea56b319a77746b4f13f&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;pytest-2180d11a9307&quot;,
+          &quot;key&quot;: &quot;empty.txt&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176591.7736688,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176773.4997435
+      },
+      {
+        &quot;id&quot;: &quot;index-f2a7e3b9649ee6683b023f87b5585c84b4905e4768f1e2f55ac7102c4952338a&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;pytest-2180d11a9307&quot;,
+          &quot;key&quot;: &quot;same-b&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176591.149769,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176773.5830717
+      },
+      {
+        &quot;id&quot;: &quot;index-fbd57e8a5da2808eff9f87236303156bbc114655d85899bf09bf5db292b986f7&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;pytest-2180d11a9307&quot;,
+          &quot;key&quot;: &quot;same-a&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176591.030072,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176773.6161637
+      },
+      {
+        &quot;id&quot;: &quot;index-3bcc5c31395031f9c76ae145edaa53a68f291825d09c2f2651f8b992eca6d59c&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;pytest-2180d11a9307&quot;,
+          &quot;key&quot;: &quot;nested/stream.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176589.6155965,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176773.4712412
+      },
+      {
+        &quot;id&quot;: &quot;gc-periodic&quot;,
+        &quot;kind&quot;: &quot;gc&quot;,
+        &quot;payload&quot;: {},
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176581.5572264,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176766.4128728
+      },
+      {
+        &quot;id&quot;: &quot;rebalance-membership&quot;,
+        &quot;kind&quot;: &quot;rebalance&quot;,
+        &quot;payload&quot;: {},
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176534.9088638,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176737.0513644
+      },
+      {
+        &quot;id&quot;: &quot;repair-node8&quot;,
+        &quot;kind&quot;: &quot;repair&quot;,
+        &quot;payload&quot;: {
+          &quot;failed_node&quot;: &quot;node8&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176520.4243433,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176737.353407
+      },
+      {
+        &quot;id&quot;: &quot;repair-node7&quot;,
+        &quot;kind&quot;: &quot;repair&quot;,
+        &quot;payload&quot;: {
+          &quot;failed_node&quot;: &quot;node7&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176520.3687766,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176737.3183212
+      },
+      {
+        &quot;id&quot;: &quot;repair-node6&quot;,
+        &quot;kind&quot;: &quot;repair&quot;,
+        &quot;payload&quot;: {
+          &quot;failed_node&quot;: &quot;node6&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176520.2824168,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176737.2837627
+      },
+      {
+        &quot;id&quot;: &quot;repair-node5&quot;,
+        &quot;kind&quot;: &quot;repair&quot;,
+        &quot;payload&quot;: {
+          &quot;failed_node&quot;: &quot;node5&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176520.2025151,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176737.2531111
+      },
+      {
+        &quot;id&quot;: &quot;repair-node4&quot;,
+        &quot;kind&quot;: &quot;repair&quot;,
+        &quot;payload&quot;: {
+          &quot;failed_node&quot;: &quot;node4&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176520.0709655,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176737.2187517
+      },
+      {
+        &quot;id&quot;: &quot;repair-node3&quot;,
+        &quot;kind&quot;: &quot;repair&quot;,
+        &quot;payload&quot;: {
+          &quot;failed_node&quot;: &quot;node3&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176519.7808201,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176737.1799586
+      },
+      {
+        &quot;id&quot;: &quot;repair-node2&quot;,
+        &quot;kind&quot;: &quot;repair&quot;,
+        &quot;payload&quot;: {
+          &quot;failed_node&quot;: &quot;node2&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176519.4100668,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176737.1385074
+      },
+      {
+        &quot;id&quot;: &quot;repair-node1&quot;,
+        &quot;kind&quot;: &quot;repair&quot;,
+        &quot;payload&quot;: {
+          &quot;failed_node&quot;: &quot;node1&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793176519.3276367,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176737.0915117
+      },
+      {
+        &quot;id&quot;: &quot;scrub-periodic&quot;,
+        &quot;kind&quot;: &quot;scrub&quot;,
+        &quot;payload&quot;: {},
+        &quot;status&quot;: &quot;completed&quot;,
+        &quot;created&quot;: 1793176457.510086,
+        &quot;progress&quot;: 246,
+        &quot;total&quot;: 246,
+        &quot;attempts&quot;: 2,
+        &quot;worker&quot;: &quot;967f3d0fc56c&quot;,
+        &quot;updated&quot;: 1793176819.9575784,
+        &quot;result&quot;: {
+          &quot;read_bytes&quot;: 0,
+          &quot;write_bytes&quot;: 0,
+          &quot;repaired&quot;: 0,
+          &quot;checked&quot;: 747
+        },
+        &quot;finished&quot;: 1793176820.085155
+      },
+      {
+        &quot;id&quot;: &quot;index-180f81b976af7b9fb90e8b56c3cb1d6e4a71b0f5da6d97916cc16f9113ba76dc&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;benchmark-replication-large-smoke&quot;,
+          &quot;key&quot;: &quot;00001.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793175356.2132156,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 1,
+        &quot;published&quot;: 1793176776.7354212,
+        &quot;worker&quot;: &quot;e7b7361d2cb0&quot;,
+        &quot;updated&quot;: 1793176685.638372,
+        &quot;error&quot;: &quot;HTTPConnectionPool(host=&#x27;elasticsearch&#x27;, port=9200): Max retries exceeded with url: /storage-objects (Caused by NameResolutionError(\&quot;HTTPConnection(host=&#x27;elasticsearch&#x27;, port=9200): Failed to resolve &#x27;elasticsearch&#x27; ([Errno -2] Name or service not known)\&quot;))&quot;
+      },
+      {
+        &quot;id&quot;: &quot;index-66dc2c8af156c44e11d7b0c66ee549b81921978f3c318c5bfa480958c718fb54&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;fault-tests-d42811e936-ec&quot;,
+          &quot;key&quot;: &quot;fault.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793175336.819805,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176821.0529704
+      },
+      {
+        &quot;id&quot;: &quot;index-1797e0f6a6023b86a89d3b948bdf3bdc9867663ad01e8467ab559512479d775d&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;fault-tests-d42811e936&quot;,
+          &quot;key&quot;: &quot;fault.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793175334.291257,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 1,
+        &quot;published&quot;: 1793176770.1582284,
+        &quot;worker&quot;: &quot;e7b7361d2cb0&quot;,
+        &quot;updated&quot;: 1793176677.5532324,
+        &quot;error&quot;: &quot;HTTPConnectionPool(host=&#x27;elasticsearch&#x27;, port=9200): Max retries exceeded with url: /storage-objects (Caused by NameResolutionError(\&quot;HTTPConnection(host=&#x27;elasticsearch&#x27;, port=9200): Failed to resolve &#x27;elasticsearch&#x27; ([Errno -3] Temporary failure in name resolution)\&quot;))&quot;
+      },
+      {
+        &quot;id&quot;: &quot;index-304fee393caa87389dd58712accf969ab59345aae73d5b84dce0f423471d189c&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;benchmark-replication-large-smoke&quot;,
+          &quot;key&quot;: &quot;00000.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793175333.679962,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176805.3365936
+      },
+      {
+        &quot;id&quot;: &quot;index-da138fd5414bad2f27de371f4bf12616249ba45fc9a7326b1654b3f53ec4614e&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;benchmark-erasure-small-smoke&quot;,
+          &quot;key&quot;: &quot;00023.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793175317.9771008,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176734.0188742
+      },
+      {
+        &quot;id&quot;: &quot;index-c13284769999a0799a951185b0ba00691cf97a50bcefeb1a2682825549c88f7d&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;benchmark-erasure-small-smoke&quot;,
+          &quot;key&quot;: &quot;00022.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793175317.8120506,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176730.083216
+      },
+      {
+        &quot;id&quot;: &quot;index-7359a42f0f8ecadc2bba356c5b03c832ad61386a3efc772d763cfe4532caccaa&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;benchmark-erasure-small-smoke&quot;,
+          &quot;key&quot;: &quot;00021.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793175317.665382,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176822.7040002
+      },
+      {
+        &quot;id&quot;: &quot;index-c16d18c6d8c7687263138cc80610ad642eb246444ecea2a10f9ecbe74cf0e017&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;benchmark-erasure-small-smoke&quot;,
+          &quot;key&quot;: &quot;00020.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793175317.545085,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176730.128828
+      },
+      {
+        &quot;id&quot;: &quot;index-1eef03be9e9a2421e62ef4ad4c41f660be9b545c1cdb304a59f32dbebfb8013e&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;benchmark-erasure-small-smoke&quot;,
+          &quot;key&quot;: &quot;00019.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793175317.4311717,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 1,
+        &quot;published&quot;: 1793176815.3431427,
+        &quot;worker&quot;: &quot;e7b7361d2cb0&quot;,
+        &quot;updated&quot;: 1793176719.1304014,
+        &quot;error&quot;: &quot;HTTPConnectionPool(host=&#x27;elasticsearch&#x27;, port=9200): Max retries exceeded with url: /storage-objects (Caused by NameResolutionError(\&quot;HTTPConnection(host=&#x27;elasticsearch&#x27;, port=9200): Failed to resolve &#x27;elasticsearch&#x27; ([Errno -3] Temporary failure in name resolution)\&quot;))&quot;
+      },
+      {
+        &quot;id&quot;: &quot;index-d80d16f638e1c3631be5b48f0a01db6bde03a88781b0adfef30b139251b9cf6e&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;benchmark-erasure-small-smoke&quot;,
+          &quot;key&quot;: &quot;00018.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793175317.3151202,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176733.950792
+      },
+      {
+        &quot;id&quot;: &quot;index-a6bf674e5135f35833ed0ae10e667b54635d4bdbc179b66246bb4a5c51b8c489&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;benchmark-erasure-small-smoke&quot;,
+          &quot;key&quot;: &quot;00017.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793175317.177322,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176728.6057043
+      },
+      {
+        &quot;id&quot;: &quot;index-46038678ae0da78c548cb5466466de6f918361e71f9556a327da1bef033eb618&quot;,
+        &quot;kind&quot;: &quot;index&quot;,
+        &quot;payload&quot;: {
+          &quot;bucket&quot;: &quot;benchmark-erasure-small-smoke&quot;,
+          &quot;key&quot;: &quot;00016.bin&quot;
+        },
+        &quot;status&quot;: &quot;queued&quot;,
+        &quot;created&quot;: 1793175317.0367804,
+        &quot;progress&quot;: 0,
+        &quot;total&quot;: 0,
+        &quot;attempts&quot;: 0,
+        &quot;published&quot;: 1793176810.6948106
+      }
+    ],
+    &quot;metadata_backend&quot;: &quot;etcd (3 members)&quot;,
+    &quot;maintenance&quot;: {
+      &quot;paused&quot;: false
+    },
+    &quot;repair_totals&quot;: {
+      &quot;read_bytes&quot;: 127758331,
+      &quot;write_bytes&quot;: 134717700,
+      &quot;repaired&quot;: 116
+    }
+  }
+}</pre></main></body></html>

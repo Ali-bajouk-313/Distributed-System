@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 5s
+scrape_configs:
+  - job_name: gateway
+    static_configs:
+      - targets: [gateway1:8000, gateway2:8000]
+  - job_name: storage
+    static_configs:
+      - targets: [node1:8000, node2:8000, node3:8000, node4:8000, node5:8000, node6:8000, node7:8000, node8:8000, node9:8000]
+  - job_name: cluster
+    static_configs:
+      - targets: [metadata:8000]

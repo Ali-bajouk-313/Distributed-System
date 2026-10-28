@@ -3,3 +3,14 @@ __pycache__/
 *.pyc
 .env
 .vscode/
+data/
+.pytest_cache/
+
+ui/node_modules/
+ui/dist/
+tmp/
+tools/
+output/tmp/
+.local-ca.pem
+.env.*.local
+

@@ -1,0 +1,7 @@
+{
+  "replica_count": 3,
+  "one_node_down_read_write": "PASS",
+  "two_replicas_down_quorums_rejected": "PASS",
+  "lost_chunk_recovery": "PASS",
+  "corrupt_replica_recovery": "PASS"
+}

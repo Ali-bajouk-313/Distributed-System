@@ -1,0 +1,103 @@
+name: Deploy to Kubernetes
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Runner with access to the Kubernetes cluster
+        type: choice
+        options: [ubuntu-latest, self-hosted]
+        default: ubuntu-latest
+      context:
+        description: Optional Kubernetes context name
+        required: false
+      image_tag:
+        description: Image tag to publish and deploy
+        default: latest
+        required: true
+permissions:
+  contents: read
+  packages: write
+jobs:
+  deploy:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 45
+    environment: kubernetes
+    steps:
+      - uses: actions/checkout@v4
+      - name: Registry authentication
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and publish images
+        shell: bash
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          set -euo pipefail
+          prefix="ghcr.io/${GITHUB_REPOSITORY,,}"
+          echo "IMAGE_PREFIX=$prefix" >> "$GITHUB_ENV"
+          docker build -f docker/Dockerfile.base -t distributed-framework:base .
+          for role in gateway metadata storage worker; do
+            docker build -f "docker/Dockerfile.$role" -t "$prefix/$role:$IMAGE_TAG" .
+            docker push "$prefix/$role:$IMAGE_TAG"
+          done
+          docker build -t "$prefix/ui:$IMAGE_TAG" ui
+          docker push "$prefix/ui:$IMAGE_TAG"
+      - name: Configure cluster connection
+        shell: bash
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+          TARGET_CONTEXT: ${{ inputs.context }}
+        run: |
+          set -euo pipefail
+          if [ -n "$KUBECONFIG_B64" ]; then
+            mkdir -p "$RUNNER_TEMP/atlas-kube"
+            echo "$KUBECONFIG_B64" | base64 --decode > "$RUNNER_TEMP/atlas-kube/config"
+            chmod 600 "$RUNNER_TEMP/atlas-kube/config"
+            echo "KUBECONFIG=$RUNNER_TEMP/atlas-kube/config" >> "$GITHUB_ENV"
+            export KUBECONFIG="$RUNNER_TEMP/atlas-kube/config"
+          fi
+          if [ -n "$TARGET_CONTEXT" ]; then kubectl config use-context "$TARGET_CONTEXT"; fi
+          kubectl cluster-info
+      - name: Install secrets and private registry credentials
+        shell: bash
+        env:
+          API_KEY: ${{ secrets.ATLAS_API_KEY }}
+          INTERNAL_KEY: ${{ secrets.ATLAS_INTERNAL_KEY }}
+          RABBIT_PASSWORD: ${{ secrets.ATLAS_RABBIT_PASSWORD }}
+          GRAFANA_PASSWORD: ${{ secrets.ATLAS_GRAFANA_PASSWORD }}
+          REGISTRY_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+          REGISTRY_USER: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          test -n "$API_KEY" && test -n "$INTERNAL_KEY" && test -n "$RABBIT_PASSWORD" && test -n "$GRAFANA_PASSWORD"
+          kubectl create namespace atlas --dry-run=client -o yaml | kubectl apply -f -
+          python - <<'PY'
+          import json, os, subprocess
+          obj={'apiVersion':'v1','kind':'Secret','metadata':{'name':'atlas-secrets','namespace':'atlas'},'stringData':{k:os.environ[k] for k in ['API_KEY','INTERNAL_KEY','RABBIT_PASSWORD','GRAFANA_PASSWORD']}}
+          subprocess.run(['kubectl','apply','-f','-'], input=json.dumps(obj), text=True, check=True)
+          PY
+          if [ -n "$REGISTRY_TOKEN" ]; then
+            kubectl -n atlas create secret docker-registry ghcr --docker-server=ghcr.io --docker-username="$REGISTRY_USER" --docker-password="$REGISTRY_TOKEN" --dry-run=client -o yaml | kubectl apply -f -
+            kubectl -n atlas patch serviceaccount default -p '{"imagePullSecrets":[{"name":"ghcr"}]}'
+          fi
+      - name: Deploy and verify
+        shell: bash
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          set -euo pipefail
+          python scripts/render_deployment.py --prefix "$IMAGE_PREFIX" --tag "$IMAGE_TAG" --output /tmp/atlas-stack.yaml
+          kubectl apply -f /tmp/atlas-stack.yaml
+          kubectl -n atlas rollout status statefulset/etcd --timeout=300s
+          kubectl -n atlas rollout status statefulset/storage --timeout=600s
+          kubectl -n atlas rollout status deployment/gateway --timeout=600s
+          kubectl -n atlas rollout status deployment/ui --timeout=300s
+          kubectl -n atlas get pods,svc,hpa,pvc
+      - name: Remove temporary kubeconfig
+        if: always()
+        shell: bash
+        run: |
+          if [ -n "${KUBECONFIG_B64:-}" ]; then rm -f "$RUNNER_TEMP/atlas-kube/config"; fi

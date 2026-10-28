@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="11" time="18.867" timestamp="2026-10-28T08:36:28.807050+00:00" hostname="3a5652a3eb93"><testcase classname="tests.test_api_v2" name="test_authentication_required" time="0.041" /><testcase classname="tests.test_api_v2" name="test_bucket_validation_and_listing" time="0.261" /><testcase classname="tests.test_api_v2" name="test_streaming_round_trip_and_ranges" time="1.586" /><testcase classname="tests.test_api_v2" name="test_deduplication_and_versions" time="0.786" /><testcase classname="tests.test_api_v2" name="test_multipart_empty_and_metadata" time="0.265" /><testcase classname="tests.test_api_v2" name="test_elasticsearch_filters" time="12.110"><failure message="AssertionError: (503, '{&quot;detail&quot;:&quot;Elasticsearch unavailable; retry after search indexing recovers&quot;}')&#10;assert 503 == 200&#10; +  where 503 = &lt;Response [503]&gt;.status_code">bucket = 'pytest-2180d11a9307'
+
+    def test_elasticsearch_filters(bucket):
+        path = f'/objects/{bucket}/search/example.json'
+        call('PUT', path, 201, data=b'{"test":true}', headers={'X-Object-Tags': '{"team":"pytest"}'})
+        result = None
+        for _ in range(25):
+&gt;           result = call('GET', '/search', params={'bucket': bucket, 'prefix': 'search/',
+                'min_size': 5, 'max_size': 1000, 'after': '2020-01-01T00:00:00Z',
+                'tags': '{"team":"pytest"}'}).json()
+
+tests/test_api_v2.py:94: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+method = 'GET', path = '/search', expected = 200
+kwargs = {'params': {'after': '2020-01-01T00:00:00Z', 'bucket': 'pytest-2180d11a9307', 'max_size': 1000, 'min_size': 5, ...}}
+response = &lt;Response [503]&gt;, @py_assert1 = 503, @py_assert3 = False
+@py_format5 = '503\n{503 = &lt;Response [503]&gt;.status_code\n} == 200'
+@py_format7 = '(503, \'{"detail":"Elasticsearch unavailable; retry after search indexing recovers"}\')\n&gt;assert 503\n{503 = &lt;Response [503]&gt;.status_code\n} == 200'
+
+    def call(method, path, expected=200, **kwargs):
+        response = requests.request(method, BASE + path, headers={'X-API-Key': KEY, **kwargs.pop('headers', {})},
+                                    timeout=180, **kwargs)
+&gt;       assert response.status_code == expected, (response.status_code, response.text[:1000])
+E       AssertionError: (503, '{"detail":"Elasticsearch unavailable; retry after search indexing recovers"}')
+E       assert 503 == 200
+E        +  where 503 = &lt;Response [503]&gt;.status_code
+
+tests/test_api_v2.py:21: AssertionError</failure></testcase><testcase classname="tests.test_api_v2" name="test_concurrent_gateway_versions" time="1.545" /><testcase classname="tests.test_api_v2" name="test_erasure_bucket_and_compression" time="1.098" /><testcase classname="tests.test_api_v2" name="test_erasure_every_four_fragments" time="0.140" /><testcase classname="tests.test_api_v2" name="test_load_balancer_and_cluster" time="0.646" /><testcase classname="tests.test_api_v2" name="test_rate_limit_shared_across_gateways" time="0.062" /></testsuite></testsuites>

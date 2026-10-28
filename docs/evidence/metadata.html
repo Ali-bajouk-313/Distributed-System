@@ -1,0 +1,209 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Atlas evidence - 3. Metadata and placement</title><style>
+    body{font-family:Segoe UI,Arial,sans-serif;margin:0;background:#f4f6fb;color:#334665}header{padding:25px 35px;background:white;border-bottom:1px solid #dde5f2}header b{font-size:24px;color:#4362af}nav{display:flex;gap:15px;flex-wrap:wrap;margin-top:17px}nav a{color:#6c83b4;font-size:12px}main{max-width:1100px;margin:30px auto;padding:0 25px}h1{font-size:30px}p{color:#7e8ca6;line-height:1.6}pre{padding:20px;background:white;border:1px solid #e0e7f3;border-radius:8px;white-space:pre-wrap;word-break:break-word;font-size:11px;line-height:1.6}.stamp{font-size:11px;color:#9ca8bd}</style></head>
+    <body><header><b>ATLAS</b> / Recorded verification evidence<nav><a href="environment.html">1. Environment</a><a href="storage.html">2. Storage nodes</a><a href="metadata.html">3. Metadata and placement</a><a href="redundancy.html">4. Redundancy and recovery</a><a href="api.html">5. API access</a><a href="ui.html">6. React console</a></nav></header><main><div class="stamp">Captured 2026-10-28 10:40:43 Middle East Standard Time | Actual command and API output</div><h1>3. Metadata and placement</h1><p>Per-bucket protection policies and recorded virtual-node placement measurement.</p><pre>{
+  &quot;status&quot;: 200,
+  &quot;body&quot;: [
+    {
+      &quot;name&quot;: &quot;benchmark-erasure-small-smoke&quot;,
+      &quot;policy&quot;: {
+        &quot;mode&quot;: &quot;erasure&quot;,
+        &quot;n&quot;: 3,
+        &quot;w&quot;: 2,
+        &quot;r&quot;: 2,
+        &quot;k&quot;: 4,
+        &quot;m&quot;: 2,
+        &quot;compress&quot;: false
+      },
+      &quot;created&quot;: 1793175313.301772,
+      &quot;objects&quot;: 0,
+      &quot;bytes&quot;: 0
+    },
+    {
+      &quot;name&quot;: &quot;benchmark-replication-large-smoke&quot;,
+      &quot;policy&quot;: {
+        &quot;mode&quot;: &quot;replication&quot;,
+        &quot;n&quot;: 3,
+        &quot;w&quot;: 2,
+        &quot;r&quot;: 2,
+        &quot;k&quot;: 4,
+        &quot;m&quot;: 2,
+        &quot;compress&quot;: false
+      },
+      &quot;created&quot;: 1793175326.6146688,
+      &quot;objects&quot;: 2,
+      &quot;bytes&quot;: 209715200
+    },
+    {
+      &quot;name&quot;: &quot;benchmark-replication-small&quot;,
+      &quot;policy&quot;: {
+        &quot;mode&quot;: &quot;replication&quot;,
+        &quot;n&quot;: 3,
+        &quot;w&quot;: 2,
+        &quot;r&quot;: 2,
+        &quot;k&quot;: 4,
+        &quot;m&quot;: 2,
+        &quot;compress&quot;: false
+      },
+      &quot;created&quot;: 1793175115.003763,
+      &quot;objects&quot;: 205,
+      &quot;bytes&quot;: 5622832
+    },
+    {
+      &quot;name&quot;: &quot;benchmark-replication-small-smoke&quot;,
+      &quot;policy&quot;: {
+        &quot;mode&quot;: &quot;replication&quot;,
+        &quot;n&quot;: 3,
+        &quot;w&quot;: 2,
+        &quot;r&quot;: 2,
+        &quot;k&quot;: 4,
+        &quot;m&quot;: 2,
+        &quot;compress&quot;: false
+      },
+      &quot;created&quot;: 1793175305.3592043,
+      &quot;objects&quot;: 0,
+      &quot;bytes&quot;: 0
+    },
+    {
+      &quot;name&quot;: &quot;fault-tests-d42811e936&quot;,
+      &quot;policy&quot;: {
+        &quot;mode&quot;: &quot;replication&quot;,
+        &quot;n&quot;: 3,
+        &quot;w&quot;: 2,
+        &quot;r&quot;: 2,
+        &quot;k&quot;: 4,
+        &quot;m&quot;: 2,
+        &quot;compress&quot;: false
+      },
+      &quot;created&quot;: 1793175322.3925264,
+      &quot;objects&quot;: 0,
+      &quot;bytes&quot;: 0
+    },
+    {
+      &quot;name&quot;: &quot;fault-tests-d42811e936-ec&quot;,
+      &quot;policy&quot;: {
+        &quot;mode&quot;: &quot;erasure&quot;,
+        &quot;n&quot;: 3,
+        &quot;w&quot;: 2,
+        &quot;r&quot;: 2,
+        &quot;k&quot;: 4,
+        &quot;m&quot;: 2,
+        &quot;compress&quot;: false
+      },
+      &quot;created&quot;: 1793175326.6152065,
+      &quot;objects&quot;: 0,
+      &quot;bytes&quot;: 0
+    },
+    {
+      &quot;name&quot;: &quot;media-archive&quot;,
+      &quot;policy&quot;: {
+        &quot;mode&quot;: &quot;erasure&quot;,
+        &quot;n&quot;: 3,
+        &quot;w&quot;: 2,
+        &quot;r&quot;: 2,
+        &quot;k&quot;: 4,
+        &quot;m&quot;: 2,
+        &quot;compress&quot;: false
+      },
+      &quot;created&quot;: 1793175108.8807964,
+      &quot;objects&quot;: 1,
+      &quot;bytes&quot;: 8388801
+    },
+    {
+      &quot;name&quot;: &quot;project-files&quot;,
+      &quot;policy&quot;: {
+        &quot;mode&quot;: &quot;replication&quot;,
+        &quot;n&quot;: 3,
+        &quot;w&quot;: 2,
+        &quot;r&quot;: 2,
+        &quot;k&quot;: 4,
+        &quot;m&quot;: 2,
+        &quot;compress&quot;: false
+      },
+      &quot;created&quot;: 1793175108.865943,
+      &quot;objects&quot;: 5,
+      &quot;bytes&quot;: 224901
+    },
+    {
+      &quot;name&quot;: &quot;pytest-2167f47b6a4f&quot;,
+      &quot;policy&quot;: {
+        &quot;mode&quot;: &quot;replication&quot;,
+        &quot;n&quot;: 3,
+        &quot;w&quot;: 2,
+        &quot;r&quot;: 2,
+        &quot;k&quot;: 4,
+        &quot;m&quot;: 2,
+        &quot;compress&quot;: false
+      },
+      &quot;created&quot;: 1793174871.4329317,
+      &quot;objects&quot;: 1,
+      &quot;bytes&quot;: 7
+    },
+    {
+      &quot;name&quot;: &quot;pytest-2180d11a9307&quot;,
+      &quot;policy&quot;: {
+        &quot;mode&quot;: &quot;replication&quot;,
+        &quot;n&quot;: 3,
+        &quot;w&quot;: 2,
+        &quot;r&quot;: 2,
+        &quot;k&quot;: 4,
+        &quot;m&quot;: 2,
+        &quot;compress&quot;: false
+      },
+      &quot;created&quot;: 1793176589.1389835,
+      &quot;objects&quot;: 1,
+      &quot;bytes&quot;: 13
+    },
+    {
+      &quot;name&quot;: &quot;pytest-3235120344c9&quot;,
+      &quot;policy&quot;: {
+        &quot;mode&quot;: &quot;replication&quot;,
+        &quot;n&quot;: 3,
+        &quot;w&quot;: 2,
+        &quot;r&quot;: 2,
+        &quot;k&quot;: 4,
+        &quot;m&quot;: 2,
+        &quot;compress&quot;: false
+      },
+      &quot;created&quot;: 1793175009.9824274,
+      &quot;objects&quot;: 0,
+      &quot;bytes&quot;: 0
+    },
+    {
+      &quot;name&quot;: &quot;pytest-ec-3cd75a3d8b&quot;,
+      &quot;policy&quot;: {
+        &quot;mode&quot;: &quot;erasure&quot;,
+        &quot;n&quot;: 3,
+        &quot;w&quot;: 2,
+        &quot;r&quot;: 2,
+        &quot;k&quot;: 4,
+        &quot;m&quot;: 2,
+        &quot;compress&quot;: true
+      },
+      &quot;created&quot;: 1793176605.7981777,
+      &quot;objects&quot;: 0,
+      &quot;bytes&quot;: 0
+    },
+    {
+      &quot;name&quot;: &quot;pytest-ec-a8177ded1a&quot;,
+      &quot;policy&quot;: {
+        &quot;mode&quot;: &quot;erasure&quot;,
+        &quot;n&quot;: 3,
+        &quot;w&quot;: 2,
+        &quot;r&quot;: 2,
+        &quot;k&quot;: 4,
+        &quot;m&quot;: 2,
+        &quot;compress&quot;: true
+      },
+      &quot;created&quot;: 1793175029.2500563,
+      &quot;objects&quot;: 0,
+      &quot;bytes&quot;: 0
+    }
+  ]
+}</pre><pre>{
+  &quot;integration&quot;: &quot;PASS&quot;,
+  &quot;sample_chunks&quot;: 20000,
+  &quot;adding_fifth_node_moved_percent&quot;: 17.77,
+  &quot;removing_fourth_node_moved_percent&quot;: 24.7,
+  &quot;healthy_storage_nodes&quot;: 4,
+  &quot;checked_at_unix&quot;: 1793170717.36244
+}</pre></main></body></html>

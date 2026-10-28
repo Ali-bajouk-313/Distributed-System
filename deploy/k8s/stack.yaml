@@ -1,0 +1,1411 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "name": "atlas"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "etcd",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "selector": {
+          "app": "etcd"
+        },
+        "ports": [
+          {
+            "port": 2379,
+            "targetPort": 2379,
+            "name": "http"
+          }
+        ],
+        "clusterIP": "None",
+        "publishNotReadyAddresses": true
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "StatefulSet",
+      "metadata": {
+        "name": "etcd",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "serviceName": "etcd",
+        "replicas": 3,
+        "podManagementPolicy": "Parallel",
+        "selector": {
+          "matchLabels": {
+            "app": "etcd"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "etcd"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "etcd",
+                "image": "quay.io/coreos/etcd:v3.5.17",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 2379
+                  },
+                  {
+                    "containerPort": 2380
+                  }
+                ],
+                "command": [
+                  "/usr/local/bin/etcd"
+                ],
+                "args": [
+                  "--name=$(POD_NAME)",
+                  "--data-dir=/etcd-data",
+                  "--listen-client-urls=http://0.0.0.0:2379",
+                  "--advertise-client-urls=http://$(POD_NAME).etcd:2379",
+                  "--listen-peer-urls=http://0.0.0.0:2380",
+                  "--initial-advertise-peer-urls=http://$(POD_NAME).etcd:2380",
+                  "--initial-cluster=etcd-0=http://etcd-0.etcd:2380,etcd-1=http://etcd-1.etcd:2380,etcd-2=http://etcd-2.etcd:2380",
+                  "--initial-cluster-token=atlas-kubernetes",
+                  "--initial-cluster-state=new",
+                  "--max-txn-ops=4096",
+                  "--max-request-bytes=8388608"
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "data",
+                    "mountPath": "/etcd-data"
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "50m",
+                    "memory": "96Mi"
+                  },
+                  "limits": {
+                    "cpu": "1000m",
+                    "memory": "512Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "POD_NAME",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.name"
+                      }
+                    }
+                  }
+                ],
+                "livenessProbe": {
+                  "exec": {
+                    "command": [
+                      "/usr/local/bin/etcdctl",
+                      "--endpoints=http://localhost:2379",
+                      "endpoint",
+                      "health"
+                    ]
+                  },
+                  "initialDelaySeconds": 20,
+                  "periodSeconds": 10,
+                  "timeoutSeconds": 5,
+                  "failureThreshold": 6
+                },
+                "readinessProbe": {
+                  "exec": {
+                    "command": [
+                      "/usr/local/bin/etcdctl",
+                      "--endpoints=http://localhost:2379",
+                      "endpoint",
+                      "health"
+                    ]
+                  },
+                  "initialDelaySeconds": 20,
+                  "periodSeconds": 10,
+                  "timeoutSeconds": 5,
+                  "failureThreshold": 6
+                }
+              }
+            ]
+          }
+        },
+        "volumeClaimTemplates": [
+          {
+            "metadata": {
+              "name": "data"
+            },
+            "spec": {
+              "accessModes": [
+                "ReadWriteOnce"
+              ],
+              "resources": {
+                "requests": {
+                  "storage": "2Gi"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "storage",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "selector": {
+          "app": "storage"
+        },
+        "ports": [
+          {
+            "port": 8000,
+            "targetPort": 8000,
+            "name": "http"
+          }
+        ],
+        "clusterIP": "None",
+        "publishNotReadyAddresses": true
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "StatefulSet",
+      "metadata": {
+        "name": "storage",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "serviceName": "storage",
+        "replicas": 8,
+        "podManagementPolicy": "Parallel",
+        "selector": {
+          "matchLabels": {
+            "app": "storage"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "storage"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "storage",
+                "image": "distributed-framework:storage",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 8000
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "atlas-secrets"
+                    }
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "ETCD_ENDPOINTS",
+                    "value": "http://etcd-0.etcd:2379,http://etcd-1.etcd:2379,http://etcd-2.etcd:2379"
+                  },
+                  {
+                    "name": "ELASTIC_URL",
+                    "value": "http://elasticsearch:9200"
+                  },
+                  {
+                    "name": "RABBITMQ_URL",
+                    "value": "amqp://storage:$(RABBIT_PASSWORD)@rabbit:5672/%2F"
+                  },
+                  {
+                    "name": "FAILURE_TIMEOUT",
+                    "value": "20"
+                  },
+                  {
+                    "name": "SCRUB_INTERVAL",
+                    "value": "60"
+                  },
+                  {
+                    "name": "NODE_ID",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.name"
+                      }
+                    }
+                  },
+                  {
+                    "name": "NODE_URL",
+                    "value": "http://$(NODE_ID).storage:8000"
+                  },
+                  {
+                    "name": "METADATA_URL",
+                    "value": "http://metadata:8000"
+                  },
+                  {
+                    "name": "DATA_DIR",
+                    "value": "/data/chunks"
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "data",
+                    "mountPath": "/data"
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "50m",
+                    "memory": "96Mi"
+                  },
+                  "limits": {
+                    "cpu": "1000m",
+                    "memory": "512Mi"
+                  }
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/health",
+                    "port": 8000
+                  },
+                  "initialDelaySeconds": 20,
+                  "periodSeconds": 10
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/health",
+                    "port": 8000
+                  },
+                  "initialDelaySeconds": 5,
+                  "periodSeconds": 5
+                }
+              }
+            ]
+          }
+        },
+        "volumeClaimTemplates": [
+          {
+            "metadata": {
+              "name": "data"
+            },
+            "spec": {
+              "accessModes": [
+                "ReadWriteOnce"
+              ],
+              "resources": {
+                "requests": {
+                  "storage": "10Gi"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "rabbit",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "selector": {
+          "app": "rabbit"
+        },
+        "ports": [
+          {
+            "port": 5672,
+            "targetPort": 5672,
+            "name": "http"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "StatefulSet",
+      "metadata": {
+        "name": "rabbit",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "serviceName": "rabbit",
+        "replicas": 1,
+        "selector": {
+          "matchLabels": {
+            "app": "rabbit"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "rabbit"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "rabbit",
+                "image": "rabbitmq:4-management",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 5672
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "atlas-secrets"
+                    }
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "RABBITMQ_DEFAULT_USER",
+                    "value": "storage"
+                  },
+                  {
+                    "name": "RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS",
+                    "value": "+S 2:2 +A 4"
+                  },
+                  {
+                    "name": "RABBITMQ_CTL_ERL_ARGS",
+                    "value": "+S 1:1 +A 1"
+                  },
+                  {
+                    "name": "RABBITMQ_DEFAULT_PASS",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "atlas-secrets",
+                        "key": "RABBIT_PASSWORD"
+                      }
+                    }
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "data",
+                    "mountPath": "/var/lib/rabbitmq"
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "50m",
+                    "memory": "96Mi"
+                  },
+                  "limits": {
+                    "cpu": "1000m",
+                    "memory": "512Mi"
+                  }
+                },
+                "readinessProbe": {
+                  "exec": {
+                    "command": [
+                      "rabbitmq-diagnostics",
+                      "-q",
+                      "ping"
+                    ]
+                  },
+                  "initialDelaySeconds": 30,
+                  "periodSeconds": 15,
+                  "timeoutSeconds": 10
+                },
+                "livenessProbe": {
+                  "exec": {
+                    "command": [
+                      "rabbitmq-diagnostics",
+                      "-q",
+                      "ping"
+                    ]
+                  },
+                  "initialDelaySeconds": 30,
+                  "periodSeconds": 15,
+                  "timeoutSeconds": 10
+                }
+              }
+            ]
+          }
+        },
+        "volumeClaimTemplates": [
+          {
+            "metadata": {
+              "name": "data"
+            },
+            "spec": {
+              "accessModes": [
+                "ReadWriteOnce"
+              ],
+              "resources": {
+                "requests": {
+                  "storage": "2Gi"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "elasticsearch",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "selector": {
+          "app": "elasticsearch"
+        },
+        "ports": [
+          {
+            "port": 9200,
+            "targetPort": 9200,
+            "name": "http"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "StatefulSet",
+      "metadata": {
+        "name": "elasticsearch",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "serviceName": "elasticsearch",
+        "replicas": 1,
+        "selector": {
+          "matchLabels": {
+            "app": "elasticsearch"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "elasticsearch"
+            }
+          },
+          "spec": {
+            "securityContext": {
+              "fsGroup": 1000
+            },
+            "containers": [
+              {
+                "name": "elasticsearch",
+                "image": "docker.elastic.co/elasticsearch/elasticsearch:8.15.0",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 9200
+                  }
+                ],
+                "command": [
+                  "/usr/share/elasticsearch/bin/elasticsearch"
+                ],
+                "args": [
+                  "-Ediscovery.type=single-node",
+                  "-Expack.security.enabled=false",
+                  "-Expack.ml.enabled=false",
+                  "-Enetwork.host=0.0.0.0"
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "atlas-secrets"
+                    }
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "discovery.type",
+                    "value": "single-node"
+                  },
+                  {
+                    "name": "xpack.security.enabled",
+                    "value": "false"
+                  },
+                  {
+                    "name": "xpack.ml.enabled",
+                    "value": "false"
+                  },
+                  {
+                    "name": "ES_JAVA_OPTS",
+                    "value": "-Xms384m -Xmx384m"
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "data",
+                    "mountPath": "/usr/share/elasticsearch/data"
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "512Mi"
+                  },
+                  "limits": {
+                    "cpu": "1500m",
+                    "memory": "1536Mi"
+                  }
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/_cluster/health",
+                    "port": 9200
+                  },
+                  "initialDelaySeconds": 60,
+                  "periodSeconds": 10,
+                  "timeoutSeconds": 5
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/_cluster/health",
+                    "port": 9200
+                  },
+                  "initialDelaySeconds": 20,
+                  "periodSeconds": 10,
+                  "timeoutSeconds": 5
+                }
+              }
+            ]
+          }
+        },
+        "volumeClaimTemplates": [
+          {
+            "metadata": {
+              "name": "data"
+            },
+            "spec": {
+              "accessModes": [
+                "ReadWriteOnce"
+              ],
+              "resources": {
+                "requests": {
+                  "storage": "5Gi"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "metadata",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "replicas": 2,
+        "selector": {
+          "matchLabels": {
+            "app": "metadata"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "metadata"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "metadata",
+                "image": "distributed-framework:metadata",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 8000
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "atlas-secrets"
+                    }
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "ETCD_ENDPOINTS",
+                    "value": "http://etcd-0.etcd:2379,http://etcd-1.etcd:2379,http://etcd-2.etcd:2379"
+                  },
+                  {
+                    "name": "ELASTIC_URL",
+                    "value": "http://elasticsearch:9200"
+                  },
+                  {
+                    "name": "RABBITMQ_URL",
+                    "value": "amqp://storage:$(RABBIT_PASSWORD)@rabbit:5672/%2F"
+                  },
+                  {
+                    "name": "FAILURE_TIMEOUT",
+                    "value": "20"
+                  },
+                  {
+                    "name": "SCRUB_INTERVAL",
+                    "value": "60"
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "50m",
+                    "memory": "96Mi"
+                  },
+                  "limits": {
+                    "cpu": "1000m",
+                    "memory": "512Mi"
+                  }
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/health",
+                    "port": 8000
+                  },
+                  "initialDelaySeconds": 20,
+                  "periodSeconds": 10
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/health",
+                    "port": 8000
+                  },
+                  "initialDelaySeconds": 5,
+                  "periodSeconds": 5
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "metadata",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "selector": {
+          "app": "metadata"
+        },
+        "ports": [
+          {
+            "port": 8000,
+            "targetPort": 8000,
+            "name": "http"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "gateway",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "replicas": 2,
+        "selector": {
+          "matchLabels": {
+            "app": "gateway"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "gateway"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "gateway",
+                "image": "distributed-framework:gateway",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 8000
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "atlas-secrets"
+                    }
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "ETCD_ENDPOINTS",
+                    "value": "http://etcd-0.etcd:2379,http://etcd-1.etcd:2379,http://etcd-2.etcd:2379"
+                  },
+                  {
+                    "name": "ELASTIC_URL",
+                    "value": "http://elasticsearch:9200"
+                  },
+                  {
+                    "name": "RABBITMQ_URL",
+                    "value": "amqp://storage:$(RABBIT_PASSWORD)@rabbit:5672/%2F"
+                  },
+                  {
+                    "name": "FAILURE_TIMEOUT",
+                    "value": "20"
+                  },
+                  {
+                    "name": "SCRUB_INTERVAL",
+                    "value": "60"
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "50m",
+                    "memory": "96Mi"
+                  },
+                  "limits": {
+                    "cpu": "1000m",
+                    "memory": "512Mi"
+                  }
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/health",
+                    "port": 8000
+                  },
+                  "initialDelaySeconds": 20,
+                  "periodSeconds": 10
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/health",
+                    "port": 8000
+                  },
+                  "initialDelaySeconds": 5,
+                  "periodSeconds": 5
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "gateway",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "selector": {
+          "app": "gateway"
+        },
+        "ports": [
+          {
+            "port": 8000,
+            "targetPort": 8000,
+            "name": "http"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "worker",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "replicas": 2,
+        "selector": {
+          "matchLabels": {
+            "app": "worker"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "worker"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "worker",
+                "image": "distributed-framework:worker",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 8000
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "atlas-secrets"
+                    }
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "ETCD_ENDPOINTS",
+                    "value": "http://etcd-0.etcd:2379,http://etcd-1.etcd:2379,http://etcd-2.etcd:2379"
+                  },
+                  {
+                    "name": "ELASTIC_URL",
+                    "value": "http://elasticsearch:9200"
+                  },
+                  {
+                    "name": "RABBITMQ_URL",
+                    "value": "amqp://storage:$(RABBIT_PASSWORD)@rabbit:5672/%2F"
+                  },
+                  {
+                    "name": "FAILURE_TIMEOUT",
+                    "value": "20"
+                  },
+                  {
+                    "name": "SCRUB_INTERVAL",
+                    "value": "60"
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "50m",
+                    "memory": "96Mi"
+                  },
+                  "limits": {
+                    "cpu": "1000m",
+                    "memory": "512Mi"
+                  }
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/health",
+                    "port": 8000
+                  },
+                  "initialDelaySeconds": 20,
+                  "periodSeconds": 10
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/health",
+                    "port": 8000
+                  },
+                  "initialDelaySeconds": 5,
+                  "periodSeconds": 5
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "worker",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "selector": {
+          "app": "worker"
+        },
+        "ports": [
+          {
+            "port": 8000,
+            "targetPort": 8000,
+            "name": "http"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "nginx-config",
+        "namespace": "atlas"
+      },
+      "data": {
+        "nginx.conf": "events { worker_connections 2048; }\nhttp {\n  upstream gateways { server gateway:8000; }\n  server {\n    listen 80;\n    client_max_body_size 2g;\n    proxy_request_buffering off;\n    proxy_buffering off;\n    proxy_read_timeout 900s;\n    proxy_send_timeout 900s;\n    location / { proxy_pass http://gateways; }\n  }\n}"
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "loadbalancer",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "replicas": 2,
+        "selector": {
+          "matchLabels": {
+            "app": "loadbalancer"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "loadbalancer"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "loadbalancer",
+                "image": "nginx:stable",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 80
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "config",
+                    "mountPath": "/etc/nginx/nginx.conf",
+                    "subPath": "nginx.conf"
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "50m",
+                    "memory": "96Mi"
+                  },
+                  "limits": {
+                    "cpu": "1000m",
+                    "memory": "512Mi"
+                  }
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "config",
+                "configMap": {
+                  "name": "nginx-config"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "loadbalancer",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "selector": {
+          "app": "loadbalancer"
+        },
+        "ports": [
+          {
+            "port": 80,
+            "targetPort": 80,
+            "name": "http"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "ui",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "replicas": 2,
+        "selector": {
+          "matchLabels": {
+            "app": "ui"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "ui"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "ui",
+                "image": "distributed-framework:ui",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 80
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "50m",
+                    "memory": "96Mi"
+                  },
+                  "limits": {
+                    "cpu": "1000m",
+                    "memory": "512Mi"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "ui",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "selector": {
+          "app": "ui"
+        },
+        "ports": [
+          {
+            "port": 80,
+            "targetPort": 80,
+            "name": "http"
+          }
+        ],
+        "type": "LoadBalancer"
+      }
+    },
+    {
+      "apiVersion": "autoscaling/v2",
+      "kind": "HorizontalPodAutoscaler",
+      "metadata": {
+        "name": "gateway",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "scaleTargetRef": {
+          "apiVersion": "apps/v1",
+          "kind": "Deployment",
+          "name": "gateway"
+        },
+        "minReplicas": 2,
+        "maxReplicas": 6,
+        "metrics": [
+          {
+            "type": "Resource",
+            "resource": {
+              "name": "cpu",
+              "target": {
+                "type": "Utilization",
+                "averageUtilization": 65
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "prometheus-config",
+        "namespace": "atlas"
+      },
+      "data": {
+        "prometheus.yml": "global:\n  scrape_interval: 10s\nscrape_configs:\n  - job_name: gateway\n    kubernetes_sd_configs:\n      - role: pod\n        namespaces: {names: [atlas]}\n    relabel_configs:\n      - source_labels: [__meta_kubernetes_pod_label_app]\n        action: keep\n        regex: gateway|storage|metadata\n      - source_labels: [__meta_kubernetes_pod_ip]\n        target_label: __address__\n        replacement: '$1:8000'\n"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ServiceAccount",
+      "metadata": {
+        "name": "prometheus",
+        "namespace": "atlas"
+      }
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "Role",
+      "metadata": {
+        "name": "prometheus",
+        "namespace": "atlas"
+      },
+      "rules": [
+        {
+          "apiGroups": [
+            ""
+          ],
+          "resources": [
+            "pods"
+          ],
+          "verbs": [
+            "get",
+            "list",
+            "watch"
+          ]
+        }
+      ]
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "RoleBinding",
+      "metadata": {
+        "name": "prometheus",
+        "namespace": "atlas"
+      },
+      "subjects": [
+        {
+          "kind": "ServiceAccount",
+          "name": "prometheus"
+        }
+      ],
+      "roleRef": {
+        "kind": "Role",
+        "name": "prometheus",
+        "apiGroup": "rbac.authorization.k8s.io"
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "prometheus",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "replicas": 1,
+        "selector": {
+          "matchLabels": {
+            "app": "prometheus"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "prometheus"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "prometheus",
+                "image": "prom/prometheus:latest",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 9090
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "config",
+                    "mountPath": "/etc/prometheus/prometheus.yml",
+                    "subPath": "prometheus.yml"
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "50m",
+                    "memory": "96Mi"
+                  },
+                  "limits": {
+                    "cpu": "1000m",
+                    "memory": "512Mi"
+                  }
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "config",
+                "configMap": {
+                  "name": "prometheus-config"
+                }
+              }
+            ],
+            "serviceAccountName": "prometheus"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "prometheus",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "selector": {
+          "app": "prometheus"
+        },
+        "ports": [
+          {
+            "port": 9090,
+            "targetPort": 9090,
+            "name": "http"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "grafana-config",
+        "namespace": "atlas"
+      },
+      "data": {
+        "datasource.yml": "apiVersion: 1\ndatasources:\n  - name: Prometheus\n    uid: prometheus\n    type: prometheus\n    access: proxy\n    url: http://prometheus:9090\n    isDefault: true\n",
+        "provider.yml": "apiVersion: 1\nproviders:\n  - name: Atlas\n    type: file\n    options:\n      path: /var/lib/grafana/dashboards\n",
+        "storage.json": "{\n  \"uid\": \"atlas-storage\",\n  \"title\": \"Atlas Distributed Storage\",\n  \"schemaVersion\": 39,\n  \"version\": 1,\n  \"refresh\": \"5s\",\n  \"time\": {\n    \"from\": \"now-30m\",\n    \"to\": \"now\"\n  },\n  \"panels\": [\n    {\n      \"id\": 1,\n      \"title\": \"Request throughput\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"targets\": [\n        {\n          \"expr\": \"sum(rate(gateway_requests_total[1m]))\",\n          \"legendFormat\": \"{{node}}{{instance}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"reqps\"\n        },\n        \"overrides\": []\n      }\n    },\n    {\n      \"id\": 2,\n      \"title\": \"P95 gateway latency\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"x\": 12,\n        \"y\": 0,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"targets\": [\n        {\n          \"expr\": \"histogram_quantile(0.95, sum by (le) (rate(gateway_request_seconds_bucket[1m])))\",\n          \"legendFormat\": \"{{node}}{{instance}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"s\"\n        },\n        \"overrides\": []\n      }\n    },\n    {\n      \"id\": 3,\n      \"title\": \"Healthy storage nodes\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 8,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"targets\": [\n        {\n          \"expr\": \"cluster_healthy_nodes\",\n          \"legendFormat\": \"{{node}}{{instance}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"short\"\n        },\n        \"overrides\": []\n      }\n    },\n    {\n      \"id\": 4,\n      \"title\": \"Degraded objects\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"x\": 12,\n        \"y\": 8,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"targets\": [\n        {\n          \"expr\": \"cluster_degraded_objects\",\n          \"legendFormat\": \"{{node}}{{instance}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"short\"\n        },\n        \"overrides\": []\n      }\n    },\n    {\n      \"id\": 5,\n      \"title\": \"Storage bytes per node\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 16,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"targets\": [\n        {\n          \"expr\": \"storage_node_stored_bytes\",\n          \"legendFormat\": \"{{node}}{{instance}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"bytes\"\n        },\n        \"overrides\": []\n      }\n    },\n    {\n      \"id\": 6,\n      \"title\": \"Chunks per node\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"x\": 12,\n        \"y\": 16,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"targets\": [\n        {\n          \"expr\": \"storage_node_chunks\",\n          \"legendFormat\": \"{{node}}{{instance}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"short\"\n        },\n        \"overrides\": []\n      }\n    },\n    {\n      \"id\": 7,\n      \"title\": \"Free disk per node\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 24,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"targets\": [\n        {\n          \"expr\": \"storage_node_disk_free_bytes\",\n          \"legendFormat\": \"{{node}}{{instance}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"bytes\"\n        },\n        \"overrides\": []\n      }\n    },\n    {\n      \"id\": 8,\n      \"title\": \"Repair rate\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"x\": 12,\n        \"y\": 24,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"targets\": [\n        {\n          \"expr\": \"rate(cluster_repaired_fragments_total[2m])\",\n          \"legendFormat\": \"{{node}}{{instance}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"ops\"\n        },\n        \"overrides\": []\n      }\n    },\n    {\n      \"id\": 9,\n      \"title\": \"Recovery traffic\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 32,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"targets\": [\n        {\n          \"expr\": \"rate(cluster_repair_read_bytes_total[2m]) + rate(cluster_repair_write_bytes_total[2m])\",\n          \"legendFormat\": \"{{node}}{{instance}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"Bps\"\n        },\n        \"overrides\": []\n      }\n    },\n    {\n      \"id\": 10,\n      \"title\": \"Unavailable objects\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"x\": 12,\n        \"y\": 32,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"targets\": [\n        {\n          \"expr\": \"cluster_unavailable_objects\",\n          \"legendFormat\": \"{{node}}{{instance}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"short\"\n        },\n        \"overrides\": []\n      }\n    }\n  ],\n  \"tags\": [\n    \"distributed-systems\",\n    \"storage\"\n  ]\n}"
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "grafana",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "replicas": 1,
+        "selector": {
+          "matchLabels": {
+            "app": "grafana"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "grafana"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "grafana",
+                "image": "grafana/grafana:latest",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 3000
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "atlas-secrets"
+                    }
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "GF_SECURITY_ADMIN_USER",
+                    "value": "admin"
+                  },
+                  {
+                    "name": "GF_SECURITY_ADMIN_PASSWORD",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "atlas-secrets",
+                        "key": "GRAFANA_PASSWORD"
+                      }
+                    }
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "config",
+                    "mountPath": "/etc/grafana/provisioning/datasources/datasource.yml",
+                    "subPath": "datasource.yml"
+                  },
+                  {
+                    "name": "config",
+                    "mountPath": "/etc/grafana/provisioning/dashboards/provider.yml",
+                    "subPath": "provider.yml"
+                  },
+                  {
+                    "name": "config",
+                    "mountPath": "/var/lib/grafana/dashboards/storage.json",
+                    "subPath": "storage.json"
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "50m",
+                    "memory": "96Mi"
+                  },
+                  "limits": {
+                    "cpu": "1000m",
+                    "memory": "512Mi"
+                  }
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "config",
+                "configMap": {
+                  "name": "grafana-config"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "grafana",
+        "namespace": "atlas"
+      },
+      "spec": {
+        "selector": {
+          "app": "grafana"
+        },
+        "ports": [
+          {
+            "port": 3000,
+            "targetPort": 3000,
+            "name": "http"
+          }
+        ]
+      }
+    }
+  ]
+}

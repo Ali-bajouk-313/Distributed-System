@@ -1,0 +1,8 @@
+{
+  "integration": "PASS",
+  "sample_chunks": 20000,
+  "adding_fifth_node_moved_percent": 17.77,
+  "removing_fourth_node_moved_percent": 24.7,
+  "healthy_storage_nodes": 4,
+  "checked_at_unix": 1793170717.36244
+}

@@ -1,0 +1,67 @@
+services:
+  metadata:
+    build: .
+    image: distributed-storage:local
+    command: uvicorn storage.metadata:app --host 0.0.0.0 --port 8000
+    ports: ["8000:8000"]
+    environment:
+      DATABASE: /data/metadata.sqlite
+      REPLICATION_FACTOR: ${REPLICATION_FACTOR:-3}
+      WRITE_QUORUM: ${WRITE_QUORUM:-2}
+      READ_QUORUM: ${READ_QUORUM:-2}
+    volumes: ["metadata-data:/data"]
+    networks: [distributed]
+  node1:
+    image: distributed-storage:local
+    build: .
+    ports: ["8001:8000"]
+    environment:
+      NODE_ID: node1
+      NODE_URL: http://node1:8000
+      METADATA_URL: http://metadata:8000
+      DATA_DIR: /data/chunks
+    volumes: ["node1-data:/data"]
+    networks: [distributed]
+  node2:
+    image: distributed-storage:local
+    build: .
+    ports: ["8002:8000"]
+    environment:
+      NODE_ID: node2
+      NODE_URL: http://node2:8000
+      METADATA_URL: http://metadata:8000
+      DATA_DIR: /data/chunks
+    volumes: ["node2-data:/data"]
+    networks: [distributed]
+  node3:
+    image: distributed-storage:local
+    build: .
+    ports: ["8003:8000"]
+    environment:
+      NODE_ID: node3
+      NODE_URL: http://node3:8000
+      METADATA_URL: http://metadata:8000
+      DATA_DIR: /data/chunks
+    volumes: ["node3-data:/data"]
+    networks: [distributed]
+  node4:
+    image: distributed-storage:local
+    build: .
+    ports: ["8004:8000"]
+    environment:
+      NODE_ID: node4
+      NODE_URL: http://node4:8000
+      METADATA_URL: http://metadata:8000
+      DATA_DIR: /data/chunks
+    volumes: ["node4-data:/data"]
+    networks: [distributed]
+networks:
+  distributed:
+    external: true
+    name: distributed-net
+volumes:
+  metadata-data:
+  node1-data:
+  node2-data:
+  node3-data:
+  node4-data:
