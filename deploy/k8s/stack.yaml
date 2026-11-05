@@ -445,6 +445,18 @@
                   "initialDelaySeconds": 30,
                   "periodSeconds": 15,
                   "timeoutSeconds": 10
+                },
+                "startupProbe": {
+                  "exec": {
+                    "command": [
+                      "rabbitmq-diagnostics",
+                      "-q",
+                      "ping"
+                    ]
+                  },
+                  "periodSeconds": 10,
+                  "timeoutSeconds": 10,
+                  "failureThreshold": 30
                 }
               }
             ]
@@ -591,6 +603,15 @@
                   "initialDelaySeconds": 20,
                   "periodSeconds": 10,
                   "timeoutSeconds": 5
+                },
+                "startupProbe": {
+                  "httpGet": {
+                    "path": "/_cluster/health",
+                    "port": 9200
+                  },
+                  "periodSeconds": 10,
+                  "timeoutSeconds": 5,
+                  "failureThreshold": 36
                 }
               }
             ]

@@ -143,6 +143,9 @@ def test_load_balancer_and_cluster():
 def test_rate_limit_shared_across_gateways():
     try:
         call('PUT', '/admin/rate-limit', json={'requests_per_minute': 1})
-        call('GET', '/buckets', 429)
+        # A fresh minute can legitimately allow one request after the limit changes.
+        responses = [requests.get(BASE + '/buckets', headers={'X-API-Key': KEY}, timeout=20) for _ in range(4)]
+        assert all(response.status_code in (200, 429) for response in responses)
+        assert sum(response.status_code == 429 for response in responses) >= 2
     finally:
         call('PUT', '/admin/rate-limit', json={'requests_per_minute': 6000})

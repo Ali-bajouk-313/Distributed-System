@@ -6,7 +6,7 @@ import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from framework import engine
-from framework.jobs import QUEUE, connection
+from framework.jobs import INDEX_QUEUE, QUEUE, connection
 from framework.store import store
 
 
@@ -81,17 +81,23 @@ class Health(BaseHTTPRequestHandler):
         pass
 
 
-def main():
-    threading.Thread(target=lambda: HTTPServer(('0.0.0.0', 8000), Health).serve_forever(), daemon=True).start()
+def consume(queue):
     while True:
         try:
-            conn, channel = connection()
+            conn, channel = connection(queue)
             channel.basic_qos(prefetch_count=1)
-            channel.basic_consume(queue=QUEUE, on_message_callback=handle)
+            channel.basic_consume(queue=queue, on_message_callback=handle)
             channel.start_consuming()
         except Exception:
             logging.exception('Worker reconnecting')
             time.sleep(5)
+
+
+def main():
+    threading.Thread(target=lambda: HTTPServer(('0.0.0.0', 8000), Health).serve_forever(), daemon=True).start()
+    # Separate broker connections keep search responsive during long maintenance jobs.
+    threading.Thread(target=consume, args=(INDEX_QUEUE,), daemon=True).start()
+    consume(QUEUE)
 
 
 if __name__ == '__main__':

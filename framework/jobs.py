@@ -8,9 +8,10 @@ from framework.settings import RABBITMQ_URL
 from framework.store import store
 
 QUEUE = 'storage.maintenance'
+INDEX_QUEUE = 'storage.indexing'
 
 
-def connection():
+def connection(queue=QUEUE):
     parameters = pika.URLParameters(RABBITMQ_URL)
     parameters.socket_timeout = 5
     parameters.blocked_connection_timeout = 10
@@ -18,6 +19,7 @@ def connection():
     conn = pika.BlockingConnection(parameters)
     channel = conn.channel()
     channel.queue_declare(queue=QUEUE, durable=True)
+    channel.queue_declare(queue=INDEX_QUEUE, durable=True)
     channel.confirm_delivery()
     return conn, channel
 
@@ -47,7 +49,7 @@ def dispatch_outbox():
     try:
         # Bound each cycle so heartbeat detection and newly queued repairs are not starved.
         for job in pending[:32]:
-            channel.basic_publish(exchange='', routing_key=QUEUE, body=json.dumps({'id': job['id']}),
+            channel.basic_publish(exchange='', routing_key=INDEX_QUEUE if job['kind'] in ('index', 'reindex') else QUEUE, body=json.dumps({'id': job['id']}),
                                   properties=pika.BasicProperties(delivery_mode=2))
             # Mark queued only if a worker has not already claimed/completed the job.
             with store.locked('job-' + job['id']):

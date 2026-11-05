@@ -73,8 +73,9 @@ def search_objects(bucket=None, prefix='', min_size=None, max_size=None, after=N
         filters.append({'range': {'size': {**({'gte': min_size} if min_size is not None else {}),
                                           **({'lte': max_size} if max_size is not None else {})}}})
     if after is not None or before is not None:
-        filters.append({'range': {'created': {**({'gte': after} if after is not None else {}),
-                                             **({'lte': before} if before is not None else {})}}})
+        filters.append({'range': {'created': {'format': 'epoch_second',
+                                             **({'gte': f'{after:.6f}'} if after is not None else {}),
+                                             **({'lte': f'{before:.6f}'} if before is not None else {})}}})
     for name, value in (tags or {}).items():
         filters.append({'term': {'tags.' + name: value}})
     try:

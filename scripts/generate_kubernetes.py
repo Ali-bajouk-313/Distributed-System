@@ -102,6 +102,7 @@ rabbit['env'] = [{'name': 'RABBITMQ_DEFAULT_USER', 'value': 'storage'},
 for probe in ('readinessProbe', 'livenessProbe'):
     rabbit[probe] = {'exec': {'command': ['rabbitmq-diagnostics', '-q', 'ping']},
                     'initialDelaySeconds': 30, 'periodSeconds': 15, 'timeoutSeconds': 10}
+rabbit['startupProbe'] = {'exec': {'command': ['rabbitmq-diagnostics', '-q', 'ping']}, 'periodSeconds': 10, 'timeoutSeconds': 10, 'failureThreshold': 30}
 add('StatefulSet', 'rabbit', {'serviceName': 'rabbit', 'replicas': 1, 'selector': {'matchLabels': {'app': 'rabbit'}},
     'template': {'metadata': {'labels': {'app': 'rabbit'}}, 'spec': {'containers': [rabbit]}}, 'volumeClaimTemplates': [pvc()]})
 
@@ -118,6 +119,7 @@ for probe in ('livenessProbe', 'readinessProbe'):
     elastic[probe] = {'httpGet': {'path': '/_cluster/health', 'port': 9200},
                       'initialDelaySeconds': 60 if probe == 'livenessProbe' else 20,
                       'periodSeconds': 10, 'timeoutSeconds': 5}
+elastic['startupProbe'] = {'httpGet': {'path': '/_cluster/health', 'port': 9200}, 'periodSeconds': 10, 'timeoutSeconds': 5, 'failureThreshold': 36}
 add('StatefulSet', 'elasticsearch', {'serviceName': 'elasticsearch', 'replicas': 1,
     'selector': {'matchLabels': {'app': 'elasticsearch'}},
     'template': {'metadata': {'labels': {'app': 'elasticsearch'}},
