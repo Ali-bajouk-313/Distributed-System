@@ -23,6 +23,7 @@ def run(profile='smoke', output='/tmp/benchmark-results.json'):
     spec = [('many-small-files', 5000 if full else 24, 1024, 50 * 1024),
             ('few-large-files', 10 if full else 2, 100 * 1024 * 1024,
              100 * 1024 * 1024)]
+    run_id = str(int(time.time()))
     results = []
     dataset = []
     previous_pause = store.get('settings/maintenance', {'paused': False})
@@ -34,7 +35,7 @@ def run(profile='smoke', output='/tmp/benchmark-results.json'):
             for mode, policy in policies.items():
                 # A fixed seed regenerates exactly the same bytes for both policies.
                 rng = random.Random(20261028)
-                name = 'benchmark-' + mode + '-' + ('small' if 'small' in workload else 'large') + '-' + profile
+                name = 'benchmark-' + mode + '-' + ('small' if 'small' in workload else 'large') + '-' + profile + '-' + run_id
                 if store.list('objects/' + name + '/'):
                     raise RuntimeError('Benchmark bucket is not empty; clean it before rerunning full measurements')
                 store.set('buckets/' + name, {'name': name, 'policy': policy, 'created': time.time()})

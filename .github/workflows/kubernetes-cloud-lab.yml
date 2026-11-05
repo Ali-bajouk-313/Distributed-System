@@ -1,0 +1,66 @@
+name: Kubernetes cloud lab
+on:
+  workflow_dispatch:
+  push:
+    branches: [lab-complete]
+permissions:
+  contents: read
+jobs:
+  kubernetes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build application images
+        run: |
+          docker build -f docker/Dockerfile.base -t distributed-framework:base .
+          for role in gateway metadata worker storage; do docker build -f docker/Dockerfile.$role -t distributed-framework:$role .; done
+          docker build -t distributed-framework:ui ui
+      - name: Download pinned Kubernetes tools and images
+        run: |
+          curl -fsSL https://kind.sigs.k8s.io/dl/v0.33.0/kind-linux-amd64 -o /tmp/kind
+          chmod +x /tmp/kind
+          sudo mv /tmp/kind /usr/local/bin/kind
+          docker pull kindest/node:v1.34.3
+          for image in nginx:stable quay.io/coreos/etcd:v3.5.17 rabbitmq:4-management prom/prometheus:latest grafana/grafana:latest docker.elastic.co/elasticsearch/elasticsearch:8.15.5; do docker pull "$image"; done
+      - name: Create and deploy the isolated Kubernetes cluster
+        run: |
+          kind create cluster --name atlas --image kindest/node:v1.34.3 --wait 120s
+          python scripts/import_kind_images.py
+          python scripts/kubernetes_secrets.py
+          kubectl apply -f deploy/k8s/stack.yaml
+          kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.8.1/components.yaml
+          kubectl -n kube-system patch deployment metrics-server --type=json -p '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+      - name: Wait for the real application
+        run: |
+          kubectl -n atlas rollout status statefulset/etcd --timeout=300s
+          kubectl -n atlas rollout status statefulset/storage --timeout=600s
+          kubectl -n atlas rollout status statefulset/elasticsearch --timeout=300s
+          for name in gateway metadata worker loadbalancer ui prometheus grafana; do kubectl -n atlas rollout status deployment/$name --timeout=300s; done
+          kubectl -n kube-system rollout status deployment/metrics-server --timeout=180s
+          kubectl -n atlas port-forward service/loadbalancer 8100:80 > /tmp/api-forward.log 2>&1 &
+      - name: Verify persistence repair failover rebalancing and autoscaling
+        run: |
+          python -m pip install requests
+          python scripts/verify_kubernetes.py
+      - name: Verify all API endpoints and search
+        run: |
+          pod=$(kubectl -n atlas get pods -l app=gateway -o jsonpath='{.items[0].metadata.name}')
+          kubectl -n atlas exec "$pod" -- python -m pytest tests/test_api_v2.py -q --junitxml=/tmp/kubernetes-api.xml
+          kubectl -n atlas cp "$pod:/tmp/kubernetes-api.xml" docs/kubernetes-api.xml
+      - name: Collect deployment evidence
+        if: always()
+        run: |
+          mkdir -p artifacts
+          kubectl -n atlas get pods,svc,hpa,pvc -o wide > artifacts/kubernetes-status.txt || true
+          kubectl -n atlas get events --sort-by=.lastTimestamp > artifacts/events.txt || true
+          cp docs/kubernetes-verification.json artifacts/ 2>/dev/null || true
+          cp docs/kubernetes-api.xml artifacts/ 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kubernetes-cloud-lab-evidence
+          path: artifacts/
+      - name: Remove the ephemeral runner cluster
+        if: always()
+        run: kind delete cluster --name atlas

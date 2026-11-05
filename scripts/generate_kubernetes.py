@@ -92,6 +92,7 @@ add('StatefulSet', 'storage', {'serviceName': 'storage', 'replicas': 8, 'podMana
         mounts=[{'name': 'data', 'mountPath': '/data'}])]}}, 'volumeClaimTemplates': [pvc(size='10Gi')]})
 
 svc('rabbit', 5672)
+items[-1]['spec']['ports'].append({'name': 'management', 'port': 15672, 'targetPort': 15672})
 rabbit = container('rabbit', 'rabbitmq:4-management', 5672, environment=[], probe=False,
                    mounts=[{'name': 'data', 'mountPath': '/var/lib/rabbitmq'}])
 rabbit['env'] = [{'name': 'RABBITMQ_DEFAULT_USER', 'value': 'storage'},
@@ -105,7 +106,7 @@ add('StatefulSet', 'rabbit', {'serviceName': 'rabbit', 'replicas': 1, 'selector'
     'template': {'metadata': {'labels': {'app': 'rabbit'}}, 'spec': {'containers': [rabbit]}}, 'volumeClaimTemplates': [pvc()]})
 
 svc('elasticsearch', 9200)
-elastic = container('elasticsearch', 'docker.elastic.co/elasticsearch/elasticsearch:8.15.0', 9200,
+elastic = container('elasticsearch', 'docker.elastic.co/elasticsearch/elasticsearch:8.15.5', 9200,
     command=['/usr/share/elasticsearch/bin/elasticsearch'],
     args=['-Ediscovery.type=single-node', '-Expack.security.enabled=false', '-Expack.ml.enabled=false', '-Enetwork.host=0.0.0.0'],
     environment=[], probe=False, mounts=[{'name': 'data', 'mountPath': '/usr/share/elasticsearch/data'}],

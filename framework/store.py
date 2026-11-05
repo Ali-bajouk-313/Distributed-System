@@ -36,6 +36,13 @@ class EtcdStore:
     def __init__(self):
         self.endpoints = list(ETCD_ENDPOINTS)
         self.local = threading.local()
+        self.preferred = None
+        self.failed_until = {}
+
+    def available_endpoints(self):
+        now = time.monotonic()
+        available = [endpoint for endpoint in self.endpoints if self.failed_until.get(endpoint, 0) <= now]
+        return sorted(available or self.endpoints, key=lambda endpoint: endpoint != self.preferred)
 
     def call(self, method, payload):
         session = getattr(self.local, 'session', None)
@@ -43,15 +50,18 @@ class EtcdStore:
             session = requests.Session()
             session.trust_env = False
             self.local.session = session
-        for endpoint in self.endpoints:
+        for endpoint in self.available_endpoints():
             try:
                 response = session.post(endpoint + '/v3/' + method, json=payload, timeout=(1, 8))
                 response.raise_for_status()
                 result = response.json()
                 if 'error' in result:
+                    self.failed_until[endpoint] = time.monotonic() + 30
                     continue
+                self.preferred = endpoint
                 return result
             except (requests.RequestException, ValueError):
+                self.failed_until[endpoint] = time.monotonic() + 30
                 continue
         raise HTTPException(503, 'Metadata quorum unavailable')
 
@@ -89,7 +99,7 @@ class EtcdStore:
         stop_renewal = threading.Event()
         def renew():
             while not stop_renewal.wait(8):
-                for endpoint in self.endpoints:
+                for endpoint in self.available_endpoints():
                     try:
                         # Close after one streamed gRPC-gateway response.
                         with requests.post(endpoint + '/v3/lease/keepalive', json={'ID': lease},
@@ -99,7 +109,8 @@ class EtcdStore:
                         break
                     except (requests.RequestException, StopIteration):
                         continue
-        renewal = None
+        renewal = threading.Thread(target=renew, daemon=True)
+        renewal.start()
         deadline = time.monotonic() + timeout
         acquired = False
         try:
@@ -110,8 +121,6 @@ class EtcdStore:
                     'success': [put_op('locks/' + name, token, lease)], 'failure': []})
                 if result.get('succeeded'):
                     acquired = True
-                    renewal = threading.Thread(target=renew, daemon=True)
-                    renewal.start()
                     yield token
                     return
                 time.sleep(random.uniform(0.03, 0.09))

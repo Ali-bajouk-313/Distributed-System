@@ -90,7 +90,7 @@ def run(required_only=False):
         # Metadata quorum survives losing one of three etcd members.
         compose('stop', 'etcd1')
         stopped.add('etcd1')
-        call('GET', '/buckets')
+        wait_for(lambda: call('GET', '/buckets') is not None)
         assert call('GET', f'/objects/{ec_name}/fault.bin').content == body
         compose('start', 'etcd1')
         stopped.remove('etcd1')
@@ -102,12 +102,16 @@ def run(required_only=False):
         stopped.remove('gateway1')
         results['gateway_failover'] = 'PASS'
         # Add a genuinely new storage node and observe actual metadata movement.
-        before = {c['id']: [loc['node'] for loc in c['locations']] for c in call('GET', f'/metadata/{ec_name}/fault.bin')['chunk_details']}
-        compose('--profile', 'scale', 'up', '-d', 'node9')
-        wait_for(lambda: call('GET', '/cluster')['healthy_nodes'] >= 9)
+        before_cluster = call('GET', '/cluster')
+        known_nodes = {n['node_id'] for n in before_cluster['nodes']}
+        joining_node = next('node'+str(i) for i in range(9,17) if 'node'+str(i) not in known_nodes)
+        expected_healthy = before_cluster['healthy_nodes'] + 1
+        compose('--profile', 'scale', 'up', '-d', joining_node)
+        wait_for(lambda: call('GET', '/cluster')['healthy_nodes'] >= expected_healthy)
         wait_job(call('POST', '/jobs/rebalance', 202))
         assert call('GET', f'/objects/{ec_name}/fault.bin').content == body
-        results['node_addition_and_rebalance'] = {'status': 'PASS', 'healthy_nodes': 9}
+        node = wait_for(lambda: next((n for n in call('GET', '/cluster')['nodes'] if n['node_id'] == joining_node and n.get('assigned_fragments', 0) > 0), None))
+        results['node_addition_and_rebalance'] = {'status': 'PASS', 'healthy_nodes': expected_healthy, 'new_node': joining_node, 'new_node_assigned_fragments': node['assigned_fragments']}
         results['all_original_bytes_verified'] = hashlib.sha256(body).hexdigest()
     finally:
         for service in stopped:

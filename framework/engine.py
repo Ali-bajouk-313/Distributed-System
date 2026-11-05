@@ -242,13 +242,16 @@ def recover_data(chunk, excluded):
 def maintain(kind, payload=None, progress=None):
     payload = payload or {}
     read_bytes = write_bytes = repaired = checked = 0
-    with store.locked(timeout=120) as token:
-        selected_ids = set(payload.get('chunk_ids', []))
-        chunks = [c for c in store.list('chunks/').values() if c['refs'] > 0
-                  and (not selected_ids or c['id'] in selected_ids)]
-        alive = live_nodes()
-        ring = HashRing(alive) if alive else None
-        for number, chunk in enumerate(chunks):
+    selected_ids = set(payload.get('chunk_ids', []))
+    chunks = [c for c in store.list('chunks/').values() if c['refs'] > 0
+              and (not selected_ids or c['id'] in selected_ids)]
+    for number, snapshot in enumerate(chunks):
+        with store.locked(timeout=120) as token:
+            chunk = store.get("chunks/" + snapshot["id"])
+            if not chunk or chunk["refs"] <= 0:
+                continue
+            alive = live_nodes()
+            ring = HashRing(alive) if alive else None
             policy = chunk['policy']
             locations = chunk['locations']
             bad = []
@@ -312,6 +315,7 @@ def maintain(kind, payload=None, progress=None):
                 store.transaction([put_op('chunks/' + chunk['id'], chunk)], token)
             if progress:
                 progress(number + 1, len(chunks))
+    with store.locked(timeout=120) as token:
         stats = store.get('stats/repair', {'read_bytes': 0, 'write_bytes': 0, 'repaired': 0})
         for key, value in [('read_bytes', read_bytes), ('write_bytes', write_bytes), ('repaired', repaired)]:
             stats[key] += value

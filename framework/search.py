@@ -25,8 +25,9 @@ def ensure_index():
             'bucket': {'type': 'keyword'}, 'key': {'type': 'keyword'}, 'size': {'type': 'long'},
             'created': {'type': 'date', 'format': 'epoch_second'}, 'tags': {'type': 'flattened'},
             'mode': {'type': 'keyword'}, 'version': {'type': 'long'}}}}, timeout=5)
-        if response.status_code not in (200, 400):
-            response.raise_for_status()
+        if response.status_code != 200:
+            if response.status_code != 400 or response.json().get('error', {}).get('type') != 'resource_already_exists_exception':
+                response.raise_for_status()
         store.set('settings/search_ready', True)
 
 
@@ -44,9 +45,8 @@ def index_object(record, deferred=True):
                                   json={k: v for k, v in record.items() if k != 'chunks'}, timeout=5)
             response.raise_for_status()
     except requests.RequestException:
-        # Outbox retry is persistent; metadata is the source of truth.
-        from framework.jobs import enqueue
-        enqueue('index', {'bucket': record['bucket'], 'key': record['key']}, unique=document_id(record['bucket'], record['key']))
+        # Propagate worker failures so the durable outbox retries the job.
+        raise
 
 
 def delete_index(bucket, key, deferred=True):
@@ -60,8 +60,7 @@ def delete_index(bucket, key, deferred=True):
             if result.status_code not in (200, 404):
                 result.raise_for_status()
     except requests.RequestException:
-        from framework.jobs import enqueue
-        enqueue('index', {'bucket': bucket, 'key': key}, unique=document_id(bucket, key))
+        raise
 
 
 def search_objects(bucket=None, prefix='', min_size=None, max_size=None, after=None, before=None, tags=None, limit=200):

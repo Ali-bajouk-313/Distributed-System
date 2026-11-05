@@ -81,8 +81,7 @@ Do not run the failure test concurrently with benchmark fragment removal.
 
 An earlier run exposed repair-queue starvation during search unavailability and
 stale locks after worker interruption. The source now defers search jobs until
-search readiness and renews 30-second metadata leases. A final successful rerun
-must be recorded before claiming the complete fault suite passed.
+search readiness and renews 30-second metadata leases. The required-only rerun passed on 4 November 2026; see docs/fault-verification.json. The bonus metadata and gateway failover suite has not yet been rerun.
 
 ## Workloads and comparison
 

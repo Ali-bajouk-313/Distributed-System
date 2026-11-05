@@ -10,7 +10,7 @@
       "command": [
         "/usr/local/bin/etcd",
         "--name",
-        "etcd1"
+        "etcd1",
         "--data-dir",
         "/etcd-data",
         "--listen-client-urls",
@@ -173,7 +173,7 @@
       }
     },
     "elasticsearch": {
-      "image": "docker.elastic.co/elasticsearch/elasticsearch:8.15.0",
+      "image": "docker.elastic.co/elasticsearch/elasticsearch:8.15.5",
       "restart": "unless-stopped",
       "networks": [
         "distributed"
@@ -883,6 +883,335 @@
         "scale"
       ]
     },
+    "node10": {
+      "image": "distributed-framework:storage",
+      "restart": "unless-stopped",
+      "networks": [
+        "distributed"
+      ],
+      "build": {
+        "context": ".",
+        "dockerfile": "docker/Dockerfile.storage"
+      },
+      "environment": {
+        "API_KEY": "${API_KEY:?Run scripts/setup.ps1 first}",
+        "INTERNAL_KEY": "${INTERNAL_KEY:?Run scripts/setup.ps1 first}",
+        "ETCD_ENDPOINTS": "http://etcd1:2379,http://etcd2:2379,http://etcd3:2379",
+        "RABBITMQ_URL": "amqp://storage:${RABBIT_PASSWORD}@rabbit:5672/%2F",
+        "ELASTIC_URL": "http://elasticsearch:9200",
+        "FAILURE_TIMEOUT": "20",
+        "SCRUB_INTERVAL": "60",
+        "RATE_LIMIT": "6000",
+        "NODE_ID": "node10",
+        "NODE_URL": "http://node10:8000",
+        "METADATA_URL": "http://loadbalancer/internal",
+        "DATA_DIR": "/data/chunks"
+      },
+      "volumes": [
+        "node10-v2-data:/data"
+      ],
+      "depends_on": {
+        "loadbalancer": {
+          "condition": "service_started"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',timeout=3)"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 6
+      },
+      "profiles": [
+        "scale"
+      ]
+    },
+    "node11": {
+      "image": "distributed-framework:storage",
+      "restart": "unless-stopped",
+      "networks": [
+        "distributed"
+      ],
+      "build": {
+        "context": ".",
+        "dockerfile": "docker/Dockerfile.storage"
+      },
+      "environment": {
+        "API_KEY": "${API_KEY:?Run scripts/setup.ps1 first}",
+        "INTERNAL_KEY": "${INTERNAL_KEY:?Run scripts/setup.ps1 first}",
+        "ETCD_ENDPOINTS": "http://etcd1:2379,http://etcd2:2379,http://etcd3:2379",
+        "RABBITMQ_URL": "amqp://storage:${RABBIT_PASSWORD}@rabbit:5672/%2F",
+        "ELASTIC_URL": "http://elasticsearch:9200",
+        "FAILURE_TIMEOUT": "20",
+        "SCRUB_INTERVAL": "60",
+        "RATE_LIMIT": "6000",
+        "NODE_ID": "node11",
+        "NODE_URL": "http://node11:8000",
+        "METADATA_URL": "http://loadbalancer/internal",
+        "DATA_DIR": "/data/chunks"
+      },
+      "volumes": [
+        "node11-v2-data:/data"
+      ],
+      "depends_on": {
+        "loadbalancer": {
+          "condition": "service_started"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',timeout=3)"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 6
+      },
+      "profiles": [
+        "scale"
+      ]
+    },
+    "node12": {
+      "image": "distributed-framework:storage",
+      "restart": "unless-stopped",
+      "networks": [
+        "distributed"
+      ],
+      "build": {
+        "context": ".",
+        "dockerfile": "docker/Dockerfile.storage"
+      },
+      "environment": {
+        "API_KEY": "${API_KEY:?Run scripts/setup.ps1 first}",
+        "INTERNAL_KEY": "${INTERNAL_KEY:?Run scripts/setup.ps1 first}",
+        "ETCD_ENDPOINTS": "http://etcd1:2379,http://etcd2:2379,http://etcd3:2379",
+        "RABBITMQ_URL": "amqp://storage:${RABBIT_PASSWORD}@rabbit:5672/%2F",
+        "ELASTIC_URL": "http://elasticsearch:9200",
+        "FAILURE_TIMEOUT": "20",
+        "SCRUB_INTERVAL": "60",
+        "RATE_LIMIT": "6000",
+        "NODE_ID": "node12",
+        "NODE_URL": "http://node12:8000",
+        "METADATA_URL": "http://loadbalancer/internal",
+        "DATA_DIR": "/data/chunks"
+      },
+      "volumes": [
+        "node12-v2-data:/data"
+      ],
+      "depends_on": {
+        "loadbalancer": {
+          "condition": "service_started"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',timeout=3)"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 6
+      },
+      "profiles": [
+        "scale"
+      ]
+    },
+    "node13": {
+      "image": "distributed-framework:storage",
+      "restart": "unless-stopped",
+      "networks": [
+        "distributed"
+      ],
+      "build": {
+        "context": ".",
+        "dockerfile": "docker/Dockerfile.storage"
+      },
+      "environment": {
+        "API_KEY": "${API_KEY:?Run scripts/setup.ps1 first}",
+        "INTERNAL_KEY": "${INTERNAL_KEY:?Run scripts/setup.ps1 first}",
+        "ETCD_ENDPOINTS": "http://etcd1:2379,http://etcd2:2379,http://etcd3:2379",
+        "RABBITMQ_URL": "amqp://storage:${RABBIT_PASSWORD}@rabbit:5672/%2F",
+        "ELASTIC_URL": "http://elasticsearch:9200",
+        "FAILURE_TIMEOUT": "20",
+        "SCRUB_INTERVAL": "60",
+        "RATE_LIMIT": "6000",
+        "NODE_ID": "node13",
+        "NODE_URL": "http://node13:8000",
+        "METADATA_URL": "http://loadbalancer/internal",
+        "DATA_DIR": "/data/chunks"
+      },
+      "volumes": [
+        "node13-v2-data:/data"
+      ],
+      "depends_on": {
+        "loadbalancer": {
+          "condition": "service_started"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',timeout=3)"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 6
+      },
+      "profiles": [
+        "scale"
+      ]
+    },
+    "node14": {
+      "image": "distributed-framework:storage",
+      "restart": "unless-stopped",
+      "networks": [
+        "distributed"
+      ],
+      "build": {
+        "context": ".",
+        "dockerfile": "docker/Dockerfile.storage"
+      },
+      "environment": {
+        "API_KEY": "${API_KEY:?Run scripts/setup.ps1 first}",
+        "INTERNAL_KEY": "${INTERNAL_KEY:?Run scripts/setup.ps1 first}",
+        "ETCD_ENDPOINTS": "http://etcd1:2379,http://etcd2:2379,http://etcd3:2379",
+        "RABBITMQ_URL": "amqp://storage:${RABBIT_PASSWORD}@rabbit:5672/%2F",
+        "ELASTIC_URL": "http://elasticsearch:9200",
+        "FAILURE_TIMEOUT": "20",
+        "SCRUB_INTERVAL": "60",
+        "RATE_LIMIT": "6000",
+        "NODE_ID": "node14",
+        "NODE_URL": "http://node14:8000",
+        "METADATA_URL": "http://loadbalancer/internal",
+        "DATA_DIR": "/data/chunks"
+      },
+      "volumes": [
+        "node14-v2-data:/data"
+      ],
+      "depends_on": {
+        "loadbalancer": {
+          "condition": "service_started"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',timeout=3)"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 6
+      },
+      "profiles": [
+        "scale"
+      ]
+    },
+    "node15": {
+      "image": "distributed-framework:storage",
+      "restart": "unless-stopped",
+      "networks": [
+        "distributed"
+      ],
+      "build": {
+        "context": ".",
+        "dockerfile": "docker/Dockerfile.storage"
+      },
+      "environment": {
+        "API_KEY": "${API_KEY:?Run scripts/setup.ps1 first}",
+        "INTERNAL_KEY": "${INTERNAL_KEY:?Run scripts/setup.ps1 first}",
+        "ETCD_ENDPOINTS": "http://etcd1:2379,http://etcd2:2379,http://etcd3:2379",
+        "RABBITMQ_URL": "amqp://storage:${RABBIT_PASSWORD}@rabbit:5672/%2F",
+        "ELASTIC_URL": "http://elasticsearch:9200",
+        "FAILURE_TIMEOUT": "20",
+        "SCRUB_INTERVAL": "60",
+        "RATE_LIMIT": "6000",
+        "NODE_ID": "node15",
+        "NODE_URL": "http://node15:8000",
+        "METADATA_URL": "http://loadbalancer/internal",
+        "DATA_DIR": "/data/chunks"
+      },
+      "volumes": [
+        "node15-v2-data:/data"
+      ],
+      "depends_on": {
+        "loadbalancer": {
+          "condition": "service_started"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',timeout=3)"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 6
+      },
+      "profiles": [
+        "scale"
+      ]
+    },
+    "node16": {
+      "image": "distributed-framework:storage",
+      "restart": "unless-stopped",
+      "networks": [
+        "distributed"
+      ],
+      "build": {
+        "context": ".",
+        "dockerfile": "docker/Dockerfile.storage"
+      },
+      "environment": {
+        "API_KEY": "${API_KEY:?Run scripts/setup.ps1 first}",
+        "INTERNAL_KEY": "${INTERNAL_KEY:?Run scripts/setup.ps1 first}",
+        "ETCD_ENDPOINTS": "http://etcd1:2379,http://etcd2:2379,http://etcd3:2379",
+        "RABBITMQ_URL": "amqp://storage:${RABBIT_PASSWORD}@rabbit:5672/%2F",
+        "ELASTIC_URL": "http://elasticsearch:9200",
+        "FAILURE_TIMEOUT": "20",
+        "SCRUB_INTERVAL": "60",
+        "RATE_LIMIT": "6000",
+        "NODE_ID": "node16",
+        "NODE_URL": "http://node16:8000",
+        "METADATA_URL": "http://loadbalancer/internal",
+        "DATA_DIR": "/data/chunks"
+      },
+      "volumes": [
+        "node16-v2-data:/data"
+      ],
+      "depends_on": {
+        "loadbalancer": {
+          "condition": "service_started"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',timeout=3)"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 6
+      },
+      "profiles": [
+        "scale"
+      ]
+    },
     "loadbalancer": {
       "image": "nginx:stable",
       "restart": "unless-stopped",
@@ -987,6 +1316,13 @@
     "node7-v2-data": {},
     "node8-v2-data": {},
     "node9-v2-data": {},
+    "node10-v2-data": {},
+    "node11-v2-data": {},
+    "node12-v2-data": {},
+    "node13-v2-data": {},
+    "node14-v2-data": {},
+    "node15-v2-data": {},
+    "node16-v2-data": {},
     "prometheus-v2-data": {},
     "grafana-v2-data": {}
   },

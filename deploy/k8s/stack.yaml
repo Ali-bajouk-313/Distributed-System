@@ -335,6 +335,11 @@
             "port": 5672,
             "targetPort": 5672,
             "name": "http"
+          },
+          {
+            "name": "management",
+            "port": 15672,
+            "targetPort": 15672
           }
         ]
       }
@@ -512,7 +517,7 @@
             "containers": [
               {
                 "name": "elasticsearch",
-                "image": "docker.elastic.co/elasticsearch/elasticsearch:8.15.0",
+                "image": "docker.elastic.co/elasticsearch/elasticsearch:8.15.5",
                 "imagePullPolicy": "IfNotPresent",
                 "ports": [
                   {

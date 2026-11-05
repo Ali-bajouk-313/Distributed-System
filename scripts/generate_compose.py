@@ -43,7 +43,7 @@ service('rabbit', 'rabbitmq:4-management', environment={'RABBITMQ_DEFAULT_USER':
     'RABBITMQ_CTL_ERL_ARGS': '+S 1:1 +A 1'}, ports=['127.0.0.1:15673:15672'],
     volumes=[persistent('rabbit-data') + ':/var/lib/rabbitmq'],
     healthcheck={'test': ['CMD', 'rabbitmq-diagnostics', '-q', 'ping'], 'interval': '15s', 'timeout': '20s', 'retries': 12})
-service('elasticsearch', 'docker.elastic.co/elasticsearch/elasticsearch:8.15.0',
+service('elasticsearch', 'docker.elastic.co/elasticsearch/elasticsearch:8.15.5',
     init=True, entrypoint=['/usr/share/elasticsearch/bin/elasticsearch'],
     command=['-Ediscovery.type=single-node', '-Expack.security.enabled=false',
              '-Expack.ml.enabled=false', '-Enetwork.host=0.0.0.0'],
@@ -63,7 +63,7 @@ for role, names in [('metadata', ['metadata', 'metadata2']), ('gateway', ['gatew
                     "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',timeout=3)"],
                     'interval': '10s', 'timeout': '5s', 'retries': 12})
 
-for i in range(1, 10):
+for i in range(1, 17):
     name = f'node{i}'
     item = service(name, 'distributed-framework:storage',
         build={'context': '.', 'dockerfile': 'docker/Dockerfile.storage'},
@@ -74,7 +74,7 @@ for i in range(1, 10):
         healthcheck={'test': ['CMD', 'python', '-c',
                     "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',timeout=3)"],
                     'interval': '10s', 'timeout': '5s', 'retries': 6})
-    if i == 9:
+    if i >= 9:
         item['profiles'] = ['scale']
 
 service('loadbalancer', 'nginx:stable', ports=['127.0.0.1:8000:80'],

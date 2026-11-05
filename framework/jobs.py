@@ -40,12 +40,13 @@ def dispatch_outbox():
     pending = [job for job in store.list('jobs/').values()
                if (job['kind'] not in ('index', 'reindex') or search_ready)
                and (job['status'] == 'pending' or (job['status'] == 'queued' and time.time() - job.get('published', 0) > 90))]
-    pending.sort(key=lambda job: job['kind'] in ('index', 'reindex'))
+    pending.sort(key=lambda job: (job['kind'] in ('index', 'reindex'), -job['created'] if job['kind'] in ('index', 'reindex') else job['created']))
     if not pending:
         return
     conn, channel = connection()
     try:
-        for job in pending:
+        # Bound each cycle so heartbeat detection and newly queued repairs are not starved.
+        for job in pending[:32]:
             channel.basic_publish(exchange='', routing_key=QUEUE, body=json.dumps({'id': job['id']}),
                                   properties=pika.BasicProperties(delivery_mode=2))
             # Mark queued only if a worker has not already claimed/completed the job.
